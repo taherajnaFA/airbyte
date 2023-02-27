@@ -11,6 +11,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
+import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
@@ -160,6 +161,24 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
               .addExpectedValues("123", null, "1.2345678901234567E9")
               .build());
     }
+  }
+
+  @Override
+  protected void addJsonbArrayTest() {
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("jsonb_array")
+            .fullSourceDataType("JSONB[]")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY)
+                .withItems(JsonSchemaType.JSONB)
+                .build())
+            .addInsertValues(
+                "ARRAY['[1,2,1]', 'false']::jsonb[]",
+                "ARRAY['{\"letter\":\"A\", \"digit\":30}', '{\"letter\":\"B\", \"digit\":31}']::jsonb[]")
+            .addExpectedValues("[\"[1, 2, 1]\",\"false\"]",
+                "[\"{\\\"digit\\\": 30, \\\"letter\\\": \\\"A\\\"}\",\"{\\\"digit\\\": 31, \\\"letter\\\": \\\"B\\\"}\"]")
+            .build());
   }
 
 }
